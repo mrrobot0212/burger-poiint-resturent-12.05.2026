@@ -1,54 +1,199 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Burgers Point | Full Menu</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Burger Point - Food Delivery</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+body{
+  font-family: ui-sans-serif, system-ui;
+  background:#050816;
+  overflow-x:hidden;
+}
+
+/* FOOD CARD */
+.food-card{
+  transition:0.3s ease;
+  border:1px solid rgba(255,255,255,0.08);
+}
+.food-card:hover{
+  transform:translateY(-8px);
+  border-color:rgba(255,255,255,0.25);
+}
+
+/* CATEGORY SCROLL */
+.cat{
+  scrollbar-width:none;
+}
+.cat::-webkit-scrollbar{
+  display:none;
+}
+
+/* REVIEW SLIDER */
+.review-track{
+  display:flex;
+  width:max-content;
+  animation:scrollLeft 18s linear infinite;
+}
+
+@keyframes scrollLeft{
+  0%{transform:translateX(0);}
+  100%{transform:translateX(-50%);}
+}
+
+.review-card{
+  flex:0 0 auto;
+}
+</style>
+
 </head>
-<body class="bg-zinc-900 text-white font-sans">
 
-    <header class="p-6 text-center border-b border-zinc-800 shadow-2xl">
-        <h1 class="text-4xl font-black text-orange-500 uppercase tracking-tighter italic">Burgers Point</h1>
-        <p class="text-gray-400 mt-2">সেরা স্বাদের খোঁজে...</p>
-    </header>
+<body class="text-white">
 
-    <main class="max-w-4xl mx-auto p-4 mb-32">
-        
-        <div id="menu-container">
-            </div>
+<!-- 🌌 BACKGROUND -->
+<div class="fixed inset-0 -z-10 overflow-hidden">
 
-    </main>
+  <div class="absolute inset-0 bg-gradient-to-br from-[#050816] via-[#0b1220] to-[#050816]"></div>
 
-    <div class="fixed bottom-0 left-0 w-full bg-zinc-800 border-t border-zinc-700 p-4 z-50">
-        <div class="max-w-4xl mx-auto flex justify-between items-center">
-            <div>
-                <p class="text-xs text-gray-400">Total Items</p>
-                <p id="total-count" class="text-xl font-bold text-orange-500">0</p>
-            </div>
-            <button onclick="openOrderModal()" class="bg-orange-600 px-8 py-3 rounded-2xl font-bold hover:bg-orange-500 active:scale-95 transition">অর্ডার করুন</button>
-        </div>
-    </div>
+  <div class="absolute top-[-150px] left-[-150px] w-[500px] h-[500px] bg-red-600 blur-[160px] opacity-30 rounded-full"></div>
+  <div class="absolute bottom-[-150px] right-[-150px] w-[500px] h-[500px] bg-orange-500 blur-[180px] opacity-25 rounded-full"></div>
+  <div class="absolute top-[30%] left-[40%] w-[350px] h-[350px] bg-yellow-400 blur-[160px] opacity-20 rounded-full"></div>
 
-    <div id="orderModal" class="fixed inset-0 bg-black/90 hidden z-[100] p-6 flex items-center justify-center">
-        <div class="bg-zinc-800 p-6 rounded-3xl w-full max-w-md border border-zinc-700">
-            <h2 class="text-2xl font-bold mb-4">অর্ডার কনফার্ম করুন</h2>
-            <input type="text" id="custName" placeholder="আপনার নাম" class="w-full p-4 mb-4 bg-zinc-900 rounded-xl outline-none border border-zinc-700 focus:border-orange-500">
-            
-            <div class="bg-zinc-900 p-4 rounded-xl mb-4 text-center">
-                <button onclick="getLocation()" class="text-orange-500 font-bold">📍 অটোমেটিক লোকেশন সেট করুন</button>
-                <p id="locationStatus" class="text-xs text-gray-500 mt-2">লোকেশন সেট করা হয়নি</p>
-            </div>
+</div>
 
-            <div class="flex gap-2">
-                <button onclick="closeOrderModal()" class="flex-1 bg-zinc-700 py-3 rounded-xl font-bold">বাতিল</button>
-                <button onclick="sendToTelegram()" class="flex-1 bg-orange-600 py-3 rounded-xl font-bold">অর্ডার পাঠান</button>
-            </div>
-        </div>
-    </div>
+<!-- HEADER -->
+<header class="sticky top-0 z-50 backdrop-blur-xl bg-white/10 border-b border-white/10">
+  <div class="max-w-7xl mx-auto flex justify-between items-center p-4">
+    
+    <h1 class="text-2xl font-bold flex items-center gap-2">
+      🍔 <span class="bg-gradient-to-r from-red-400 to-orange-400 bg-clip-text text-transparent">
+      Burger Point
+      </span>
+    </h1>
 
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    <script src="script.js"></script>
+    <!-- Desktop cart button -->
+    <button onclick="toggleCart()" 
+      class="hidden md:flex items-center gap-2 bg-red-500 hover:bg-red-600 px-5 py-2 rounded-xl shadow-lg transition">
+      🛒 Cart <span id="cartCount">0</span>
+    </button>
+
+  </div>
+</header>
+
+<!-- CATEGORY -->
+<div class="cat flex gap-2 overflow-x-auto p-3 justify-">
+  <button onclick="filterFood('all')" class="px-3 py-1 bg-white text-black rounded-full">All</button>
+  <button onclick="filterFood('burger')" class="px-3 py-1 bg-red-500 rounded-full">Burger</button>
+  <button onclick="filterFood('sandwich')" class="px-3 py-1 bg-yellow-500 rounded-full">Sandwich</button>
+  <button onclick="filterFood('meatbox')" class="px-3 py-1 bg-green-500 rounded-full">Meatbox</button>
+  <button onclick="filterFood('shawarma')" class="px-3 py-1 bg-purple-500 rounded-full">Shawarma</button>
+  <button onclick="filterFood('pasta')" class="px-3 py-1 bg-pink-500 rounded-full">Pasta</button>
+  <button onclick="filterFood('drinks')" class="px-3 py-1 bg-blue-500 rounded-full">Drinks</button>
+</div>
+
+<!-- MENU -->
+<section class="max-w-6xl mx-auto p-6">
+
+<h2 class="text-3xl font-bold text-center mb-6">🔥 Trending Menu</h2>
+
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+<!-- FOOD CARDS -->
+<div class="food-card burger bg-white/5 p-3 rounded-2xl">
+  <img src="https://images.unsplash.com/photo-1606755962773-d324e2d5f3a7" class="h-44 w-full object-cover rounded-xl">
+  <h3 class="mt-2 font-bold">Cheese Burger</h3>
+  <button onclick="addToCart('Burger',5.99)" class="bg-red-500 px-3 py-1 mt-2 rounded">Add $5.99</button>
+</div>
+
+<div class="food-card sandwich bg-white/5 p-3 rounded-2xl">
+  <img src="https://images.unsplash.com/photo-1550507992-eb63ffee0847" class="h-44 w-full object-cover rounded-xl">
+  <h3 class="mt-2 font-bold">Sandwich</h3>
+  <button onclick="addToCart('Sandwich',4.5)" class="bg-yellow-500 px-3 py-1 mt-2 rounded">Add $4.5</button>
+</div>
+
+<div class="food-card meatbox bg-white/5 p-3 rounded-2xl">
+  <img src="https://images.unsplash.com/photo-1603360946369-dc9bb6258143" class="h-44 w-full object-cover rounded-xl">
+  <h3 class="mt-2 font-bold">Meatbox</h3>
+  <button onclick="addToCart('Meatbox',7.99)" class="bg-green-500 px-3 py-1 mt-2 rounded">Add $7.99</button>
+</div>
+
+<div class="food-card shawarma bg-white/5 p-3 rounded-2xl">
+  <img src="https://images.unsplash.com/photo-1604908176997-125f25cc500f" class="h-44 w-full object-cover rounded-xl">
+  <h3 class="mt-2 font-bold">Shawarma</h3>
+  <button onclick="addToCart('Shawarma',6.5)" class="bg-purple-500 px-3 py-1 mt-2 rounded">Add $6.5</button>
+</div>
+
+<div class="food-card pasta bg-white/5 p-3 rounded-2xl">
+  <img src="https://images.unsplash.com/photo-1523986371872-9d3ba2e2f642" class="h-44 w-full object-cover rounded-xl">
+  <h3 class="mt-2 font-bold">Pasta</h3>
+  <button onclick="addToCart('Pasta',5.8)" class="bg-pink-500 px-3 py-1 mt-2 rounded">Add $5.8</button>
+</div>
+
+<div class="food-card drinks bg-white/5 p-3 rounded-2xl">
+  <img src="https://images.unsplash.com/photo-1551024709-8f23befc6f87" class="h-44 w-full object-cover rounded-xl">
+  <h3 class="mt-2 font-bold">Drinks</h3>
+  <button onclick="addToCart('Drinks',1.5)" class="bg-blue-500 px-3 py-1 mt-2 rounded">Add $1.5</button>
+</div>
+
+</div>
+</section>
+
+<!-- ⭐ REVIEWS -->
+<section class="w-full mt-16">
+
+<h2 class="text-3xl font-bold text-center mb-6">⭐ Customer Reviews</h2>
+
+<div class="w-full overflow-hidden bg-white/5 py-6">
+
+<div class="review-track gap-6">
+
+  <div class="review-card w-80 bg-black/40 rounded-xl overflow-hidden">
+    <img src="https://i.ibb.co/1.png" class="h-40 w-full object-cover">
+    <p class="p-3">Rahim - Fast delivery 🚀</p>
+  </div>
+
+  <div class="review-card w-80 bg-black/40 rounded-xl overflow-hidden">
+    <img src="https://i.ibb.co/2.png" class="h-40 w-full object-cover">
+    <p class="p-3">Ayesha - So tasty 😍</p>
+  </div>
+
+  <div class="review-card w-80 bg-black/40 rounded-xl overflow-hidden">
+    <img src="https://i.ibb.co/3.png" class="h-40 w-full object-cover">
+    <p class="p-3">Karim - Best burger 🍔</p>
+  </div>
+
+  <div class="review-card w-80 bg-black/40 rounded-xl overflow-hidden">
+    <img src="https://i.ibb.co/4.png" class="h-40 w-full object-cover">
+    <p class="p-3">Nusrat - Great service 🚚</p>
+  </div>
+
+  <!-- duplicate -->
+  <div class="review-card w-80 bg-black/40 rounded-xl overflow-hidden">
+    <img src="https://i.ibb.co/1.png" class="h-40 w-full object-cover">
+    <p class="p-3">Rahim - Fast delivery 🚀</p>
+  </div>
+
+</div>
+
+</div>
+</section>
+
+<!-- CART -->
+<div id="cart" class="fixed right-0 top-0 w-80 h-full bg-white text-black p-4 hidden">
+  <h2 class="font-bold text-xl">Cart</h2>
+
+  <div id="cartItems"></div>
+
+  <p class="mt-4 font-bold">Total: $<span id="total">0</span></p>
+
+  <button onclick="checkout()" class="w-full bg-green-500 text-white py-2 mt-3 rounded">
+    Order WhatsApp
+  </button>
+</div>
+
+<script src="app.js"></script>
 </body>
 </html>
